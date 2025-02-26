@@ -41,7 +41,7 @@
         });
         
         var carIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png',
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png',
             iconSize: [40, 40],
             iconAnchor: [20, 20]
         });
@@ -50,16 +50,30 @@
         var index = 0;
         var polyline = L.polyline([locations[0].coords], { color: 'blue' }).addTo(map);
         
-        function moveCar() {
-            if (index < locations.length - 1) {
-                index++;
-                carMarker.setLatLng(locations[index].coords);
-                polyline.addLatLng(locations[index].coords);
-                setTimeout(moveCar, 2000);
+        function animateCar(start, end, duration) {
+            var startTime = performance.now();
+            function move(timestamp) {
+                var elapsed = timestamp - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                var lat = start[0] + (end[0] - start[0]) * progress;
+                var lng = start[1] + (end[1] - start[1]) * progress;
+                carMarker.setLatLng([lat, lng]);
+                if (progress < 1) {
+                    requestAnimationFrame(move);
+                } else {
+                    polyline.addLatLng(end);
+                    index++;
+                    if (index < locations.length - 1) {
+                        animateCar(locations[index].coords, locations[index + 1].coords, 5000);
+                    }
+                }
             }
+            requestAnimationFrame(move);
         }
         
-        moveCar();
+        setTimeout(() => {
+            animateCar(locations[0].coords, locations[1].coords, 5000);
+        }, 3000);
     </script>
 </body>
 </html>
